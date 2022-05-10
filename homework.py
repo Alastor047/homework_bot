@@ -5,14 +5,14 @@ import os
 import sys
 import time
 
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 import requests
 import telegram
 
 from exceptions import EndpointError, JSONError, SendMessageError
 
 
-load_dotenv()
+# load_dotenv()
 
 
 PRACTICUM_TOKEN = os.getenv('YANDEX_TOKEN')
