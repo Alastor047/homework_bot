@@ -78,6 +78,7 @@ def check_response(response):
 
 
 def parse_status(homework):
+    """Функция проверки статуса"""
     try:
         homework_name = homework['homework_name']
         homework_status = homework['status']
