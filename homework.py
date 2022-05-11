@@ -1,26 +1,24 @@
-from http import HTTPStatus
 import json
 import logging
 import os
 import sys
 import time
+from http import HTTPStatus
 
-# from dotenv import load_dotenv
 import requests
 import telegram
+from dotenv import load_dotenv
 
+from constants import ENDPOINT, PAYLOAD, RETRY_TIME
 from exceptions import EndpointError, JSONError, SendMessageError
 
-
-# load_dotenv()
+load_dotenv()
 
 
 PRACTICUM_TOKEN = os.getenv('YANDEX_TOKEN')
 TELEGRAM_TOKEN = os.getenv('BOT_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('MY_CHAT')
 
-RETRY_TIME = 600
-ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 
 
@@ -72,7 +70,7 @@ def check_response(response):
     key = 'homeworks'
     if key not in response:
         raise KeyError(f'В response нет ключа {key}')
-    if type(response[key]) is not list:
+    if not isinstance(response[key], list):
         raise TypeError('Домашняя работа получена не в виде списка')
     return response[key]
 
@@ -86,8 +84,8 @@ def parse_status(homework):
         raise KeyError(f'В словаре домашней работы нет ключа {e}')
 
     if homework_status not in HOMEWORK_STATUSES:
-        raise KeyError(('Недокументированный статус домашней '
-                        f'работы: {homework_status}'))
+        raise ValueError('Недокументированный статус домашней '
+                         f'работы: {homework_status}')
     verdict = HOMEWORK_STATUSES[homework_status]
 
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
@@ -118,8 +116,10 @@ def main():
             for homework in homeworks:
                 message = parse_status(homework)
                 send_message(bot, message)
-
-            current_timestamp = int(time.time())
+# смотрел шпаргалку Практикума, возможно не так понял но пришел к решению так
+            current_timestamp = requests.get(
+                ENDPOINT, headers=HEADERS, params=PAYLOAD
+            )
 
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
@@ -137,4 +137,8 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('Работа остановлена')
+        sys.exit(0)
