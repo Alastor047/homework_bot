@@ -9,7 +9,7 @@ import requests
 import telegram
 from dotenv import load_dotenv
 
-from constants import ENDPOINT, PAYLOAD, RETRY_TIME
+from constants import ENDPOINT, RETRY_TIME
 from exceptions import EndpointError, JSONError, SendMessageError
 
 load_dotenv()
@@ -42,8 +42,8 @@ def send_message(bot, message):
     """Функция отправки сообщений."""
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
-        logger.info(('Сообщение отправленно : '
-                     f'{message}'))
+        logger.info('Сообщение отправленно : '
+                    f'{message}')
     except telegram.TelegramError as error:
         raise SendMessageError(error)
 
@@ -116,11 +116,7 @@ def main():
             for homework in homeworks:
                 message = parse_status(homework)
                 send_message(bot, message)
-# смотрел шпаргалку Практикума, возможно не так понял но пришел к решению так
-            current_timestamp = requests.get(
-                ENDPOINT, headers=HEADERS, params=PAYLOAD
-            )
-
+            current_timestamp = response.get('current_date', current_timestamp)
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
             logger.error(message)
@@ -140,5 +136,4 @@ if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
-        print('Работа остановлена')
-        sys.exit(0)
+        logger.info('Работа остановлена')
